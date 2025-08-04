@@ -1,0 +1,54 @@
+version: "3.8"
+
+volumes:
+  mysql_data:
+  romm_resources:
+  romm_redis_data:
+
+services:
+  romm:
+    image: rommapp/romm:latest
+    container_name: romm
+    restart: unless-stopped
+    environment:
+      - DB_HOST=romm-db
+      - DB_NAME=romm
+      - DB_USER=romm-user
+      - DB_PASSWD=sJrZdY/J+33CQX0z/Bvdcy8MKTprjJRFOK4mq8GRY5I=
+      - ROMM_AUTH_SECRET_KEY=22a78c4a215f29ea4b2eb97c011e787caec4394779e9691ea284fc4f6b9b1060
+      # API keys below should be configured with your own keys
+      - IGDB_CLIENT_ID=
+      - IGDB_CLIENT_SECRET=
+      - MOBYGAMES_API_KEY=
+      - STEAMGRIDDB_API_KEY=
+    volumes:
+      - romm_resources:/romm/resources
+      - romm_redis_data:/redis-data
+      - ./romm-data/library:/romm/library
+      - ./romm-data/assets:/romm/assets
+      - ./romm-data/config:/romm/config
+    ports:
+      - "8080:13280"
+    depends_on:
+      romm-db:
+        condition: service_healthy
+        restart: true
+
+  romm-db:
+    image: mariadb:latest
+    container_name: romm-db
+    restart: unless-stopped
+    environment:
+      - MARIADB_ROOT_PASSWORD=sJrZdY/J+33CQX0z/Bvdcy8MKTprjJRFOK4mq8GRY5I=
+      - MARIADB_DATABASE=romm
+      - MARIADB_USER=romm-user
+      - MARIADB_PASSWORD=sJrZdY/J+33CQX0z/Bvdcy8MKTprjJRFOK4mq8GRY5I=
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 30s
+      start_interval: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 5

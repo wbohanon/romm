@@ -9,24 +9,25 @@ services:
     image: rommapp/romm:latest
     container_name: romm
     restart: unless-stopped
+    network_mode: host
     environment:
-      - DB_HOST=romm-db
+      - DB_HOST=localhost
+      - DB_PORT=3306
       - DB_NAME=romm # Should match MARIADB_DATABASE in mariadb
       - DB_USER=romm-user # Should match MARIADB_USER in mariadb
-      - DB_PASSWD=Williamm1! # Should match MARIADB_PASSWORD in mariadb
-      - ROMM_AUTH_SECRET_KEY=5090574d9b31ebd8e4d4836e13e20ed7338b9369c749b737a836c35ca1d93600  # Generate a key with `openssl rand -hex 32`
+      - DB_PASSWD=sJrZdY/J+33CQX0z/Bvdcy8MKTprjJRFOK4mq8GRY5I= # Should match MARIADB_PASSWORD in mariadb
+      - ROMM_AUTH_SECRET_KEY=22a78c4a215f29ea4b2eb97c011e787caec4394779e9691ea284fc4f6b9b1060  # Generate a key with `openssl rand -hex 32`
       - IGDB_CLIENT_ID=dewiwx5moyti3kqijg08lsxjnv36vu # Generate an ID and SECRET in IGDB
       - IGDB_CLIENT_SECRET=ir91jzbt1ivftmyyzzhah2w4tqvekt # https://api-docs.igdb.com/#account-creation
       - MOBYGAMES_API_KEY= # https://www.mobygames.com/info/api/
       - STEAMGRIDDB_API_KEY=99000639f8c772bc7bc2e299aa83a248 # https://github.com/rommapp/romm/wiki/Generate-API-Keys#steamgriddb
     volumes:
-      - /volume1/docker/rommanager/resources:/romm/resources # Resources fetched from IGDB (covers, screenshots, etc.)
-      - /volume1/docker/rommanager/redis_data:/redis-data # Cached data for background tasks
-      - /volume1/docker/rommanager/library:/romm/library # Your game library. Check https://github.com/rommapp/romm?tab=readme-ov-file#folder-structure for more details.
-      - /volume1/docker/rommanager/assets:/romm/assets # Uploaded saves, states, etc.
-      - /volume1/docker/rommanager//config:/romm/config # Path where config.yml is stored
-    ports:
-      - 80:13280
+      - romm_resources:/romm/resources # Resources fetched from IGDB (covers, screenshots, etc.)
+      - romm_redis_data:/redis-data # Cached data for background tasks
+      - ./romm-data/library:/romm/library # Your game library. Check https://github.com/rommapp/romm?tab=readme-ov-file#folder-structure for more details.
+      - ./romm-data/assets:/romm/assets # Uploaded saves, states, etc.
+      - ./romm-data/config:/romm/config # Path where config.yml is stored
+
     depends_on:
       romm-db:
         condition: service_healthy
@@ -36,11 +37,13 @@ services:
     image: mariadb:latest
     container_name: romm-db
     restart: unless-stopped
+    ports:
+      - "3306:3306"
     environment:
-      - MARIADB_ROOT_PASSWORD=Williamm1! # Use a unique, secure password
+      - MARIADB_ROOT_PASSWORD=sJrZdY/J+33CQX0z/Bvdcy8MKTprjJRFOK4mq8GRY5I= # Use a unique, secure password
       - MARIADB_DATABASE=romm
       - MARIADB_USER=romm-user
-      - MARIADB_PASSWORD=Williamm1!
+      - MARIADB_PASSWORD=sJrZdY/J+33CQX0z/Bvdcy8MKTprjJRFOK4mq8GRY5I=
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
